@@ -1,5 +1,5 @@
 buildscript {
-    ext.min_sdk_version = "10.1.1"
+    ext.min_sdk_version = "10.2.0"
     ext.min_rr_ftc_version = "0.1.15"
     ext.min_rr_version = "1.0.1"
     ext.min_dash_version = "0.4.16"
@@ -62,4 +62,10 @@ dependencies {
     api "com.acmerobotics.dashboard:dashboard:$min_dash_version"
 
     api "com.pedropathing:pedro:$min_pp_version"
+
+    implementation("org.nanohttpd:nanohttpd-websocket:2.3.1") {
+        exclude module: "nanohttpd"
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
 }
