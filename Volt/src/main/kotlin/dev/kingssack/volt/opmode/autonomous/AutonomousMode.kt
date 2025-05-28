@@ -1,4 +1,4 @@
-package dev.kingssack.volt.autonomous
+package dev.kingssack.volt.opmode.autonomous
 
 import com.acmerobotics.dashboard.FtcDashboard
 import com.acmerobotics.dashboard.canvas.Canvas
