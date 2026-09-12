@@ -121,16 +121,18 @@
 
   function onPortDrag(node: Node, portType: 'input' | 'output', e: MouseEvent) {
     if (portType === 'input') {
-      const existingConn = flowGraphState.connections.find((c) => c.sourceNode === node.id);
-      if (existingConn) {
-        flowGraphState.activeConnection = {
-          fromId: existingConn.sourceNode,
-          fromPos: getPortPosition(node, 'input'),
-          to: screenToCanvas(e.clientX, e.clientY, canvasContainer, editorState.viewport)
-        };
-        flowGraphState.deleteConnection(existingConn.id);
-        return;
-      }
+      if (portType === 'input') {
+        const existingConn = flowGraphState.connections.find((c) => c.targetNode === node.id);
+        if (existingConn) {
+          const sourceNode = flowGraphState.nodes.find((n) => n.id === existingConn.sourceNode);
+          if (!sourceNode) return;
+          flowGraphState.activeConnection = {
+            fromId: existingConn.sourceNode,
+            fromPos: getPortPosition(sourceNode, 'output'),
+            to: screenToCanvas(e.clientX, e.clientY, canvasContainer, editorState.viewport)
+          };
+          flowGraphState.deleteConnection(existingConn.id);
+          return;
     }
 
     const portPos = getPortPosition(node, portType);
