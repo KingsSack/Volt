@@ -37,13 +37,13 @@ class ButtonHandler(
         val currentTime = runtime.milliseconds()
 
         // Debounce check
-        if (currentTime - lastUpdateTime < debounceThreshold) {
-            return
-        }
-
         tappedThisTick = false
         releasedThisTick = false
         doubleTappedThisTick = false
+
+        if (currentTime - lastUpdateTime < debounceThreshold) {
+            return
+        }
 
         if (buttonPressed != pressed) {
             lastUpdateTime = currentTime
