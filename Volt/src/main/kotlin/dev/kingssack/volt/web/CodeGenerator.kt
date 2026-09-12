@@ -214,7 +214,7 @@ class CodeGenerator(
             "Int" -> str.toDoubleOrNull()?.toInt()?.toString() ?: str
             "Long" -> "${str}L"
             "Boolean" -> str.lowercase()
-            "String" -> "\"$str\""
+            "String" -> "\"${str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")}\""
             "Button" -> "Button.$str"
             "AnalogInput" -> "AnalogInput.$str"
             else -> str
