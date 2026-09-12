@@ -166,7 +166,7 @@ class CodeGenerator(
                 "DoubleTap(Button.$button)"
             }
             "Change" -> {
-                val input = eventNode.parameters["input"] ?: "A1"
+                val input = eventNode.parameters["input"] ?: "LEFT_STICK_X1"
                 "Change(AnalogInput.$input)"
             }
             "Threshold" -> {
