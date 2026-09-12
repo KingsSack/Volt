@@ -387,7 +387,7 @@ class FlowEditorApiHandler : WebHandler {
             }
             val robotMeta = MetadataService.getRobotById(opMode.robotId)
             val generatedCode = CodeGenerator(flowGraph, opMode, robotMeta).generate()
-            opModes[opMode.id] = opMode.copy(generatedCode = generatedCode)
+            opModes[opMode.id] = opMode.copy(flowGraph = flowGraph, generatedCode = generatedCode)
             return createJsonResponse(gson.toJson(mapOf("code" to generatedCode)))
         } catch (e: Exception) {
             Log.e(TAG, "Error generating code", e)
