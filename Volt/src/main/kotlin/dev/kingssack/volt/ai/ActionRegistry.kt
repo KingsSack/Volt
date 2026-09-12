@@ -60,13 +60,16 @@ class ActionRegistry(private val providers: List<Any>) {
     private fun coerce(value: Any?, target: KType): Any? {
         if (value == null) return null
         val classifier = target.classifier
+
         if (classifier is KClass<*> && classifier.java.isEnum) {
             return classifier.java.enumConstants?.find { it.toString() == value.toString() }
         }
+
         return when (target.classifier) {
             Int::class -> (value as Number).toInt()
             Long::class -> (value as Number).toLong()
             Double::class -> (value as Number).toDouble()
+            Float::class -> (value as Number).toFloat()
             Boolean::class -> value as Boolean
             else -> value.toString()
         }
