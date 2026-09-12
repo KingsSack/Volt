@@ -1,62 +1,47 @@
 package dev.kingssack.volt.opmode.autonomous
 
-import com.acmerobotics.dashboard.FtcDashboard
-import com.acmerobotics.dashboard.canvas.Canvas
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
-import com.acmerobotics.roadrunner.Action
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.HardwareMap
+import dev.kingssack.volt.core.VoltActionBuilder
+import dev.kingssack.volt.opmode.VoltOpMode
+import dev.kingssack.volt.opmode.VoltOpModeMeta
 import dev.kingssack.volt.robot.Robot
-import dev.kingssack.volt.util.ActionSequenceBuilder
+import dev.kingssack.volt.util.Event.AutonomousEvent
+import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta
 
 /**
- * AutonomousMode is an abstract class that defines the methods for running an autonomous mode.
+ * A [VoltOpMode] for autonomously controlling a [robot].
  *
- * @property robot the robot instance
+ * @param R the type of robot
  */
-abstract class AutonomousMode<R : Robot>(private val robotFactory: (HardwareMap) -> R) :
-    LinearOpMode() {
-    protected lateinit var robot: R
-        private set
-
-    private val dash: FtcDashboard? = FtcDashboard.getInstance()
-    private val canvas = Canvas()
-
-    /** Optional initialization code for the autonomous mode. */
-    open fun initialize() {
-        // Default implementation does nothing
-    }
-
-    override fun runOpMode() {
-        robot = robotFactory(hardwareMap)
-        initialize()
-        waitForStart()
-        sequence()
-    }
-
-    /** Define the autonomous sequence using DSL. */
-    protected abstract fun sequence()
-
-    /** Execute the autonomous sequence. */
-    protected fun execute(block: ActionSequenceBuilder.() -> Unit) {
-        val builder = ActionSequenceBuilder().apply(block)
-        runAction(builder.build())
-        telemetry.addData("Autonomous", "Completed")
-        telemetry.update()
-    }
-
-    private fun runAction(action: Action) {
-        action.preview(canvas)
-
-        var running = true
-        while (running && !Thread.currentThread().isInterrupted) {
-            val p = TelemetryPacket()
-            p.fieldOverlay().operations.addAll(canvas.operations)
-
-            running = action.run(p)
-
-            robot.update(telemetry)
-            dash?.sendTelemetryPacket(p)
+abstract class AutonomousMode<R : Robot> : VoltOpMode<R>() {
+    @Suppress("unused")
+    object Register : Registrar() {
+        override fun register(
+            registrationHelper: VoltRegistrationHelper,
+            clazz: Class<VoltOpMode<*>>,
+        ) {
+            if (clazz.isAnnotationPresent(VoltOpModeMeta::class.java)) {
+                val annotation = clazz.getAnnotation(VoltOpModeMeta::class.java)
+                if (annotation != null) {
+                    registrationHelper.register(
+                        clazz.getDeclaredConstructor(),
+                        OpModeMeta.Builder()
+                            .setName(annotation.name)
+                            .setGroup(annotation.group)
+                            .setFlavor(OpModeMeta.Flavor.AUTONOMOUS)
+                            .setTransitionTarget(
+                                if (annotation.autoTransition == "") null
+                                else annotation.autoTransition
+                            )
+                            .setSource(OpModeMeta.Source.EXTERNAL_LIBRARY)
+                            .build(),
+                    )
+                }
+            }
         }
+    }
+
+    /** Bind an [AutonomousEvent] to a [block]. */
+    protected infix fun <P> AutonomousEvent<P>.then(block: VoltActionBuilder.(P) -> Unit) {
+        eventHandler.bind(this, block)
     }
 }
