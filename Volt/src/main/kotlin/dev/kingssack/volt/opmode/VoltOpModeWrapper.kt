@@ -70,7 +70,7 @@ object VoltOpModeWrapper {
                 reportFault(e)
             }
         }
-        _state.value = OpModeState.Running
+        if (_state.value !is OpModeState.Fault) _state.value = OpModeState.Running
     }
 
     private fun stopOpMode() {
