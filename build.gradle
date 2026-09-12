@@ -10,10 +10,14 @@ buildscript {
         google()
     }
     dependencies {
-        // Note for FTC Teams: Do not modify this yourself. Whoops...
-        classpath 'com.android.tools.build:gradle:8.7.3'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20'
     }
+}
+
+plugins {
+    // Note for FTC Teams: Do not modify this yourself.
+    id 'com.android.application' version '8.13.2' apply false
+    id 'com.android.library' version '8.13.2' apply false
 }
 
 plugins {
