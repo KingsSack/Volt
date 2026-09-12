@@ -146,8 +146,8 @@ class CodeGenerator(
     private fun generateEventConstructor(eventNode: Node): String? =
         when (eventNode.label) {
             "Start" -> "Start"
-            "First" -> "First(\"${eventNode.parameters["condition"] ?: "condition"}\")"
-            "When" -> "When(\"${eventNode.parameters["condition"] ?: "condition"}\")"
+            "First" -> "First { ${eventNode.parameters["condition"] ?: "false"} }"
+            "When" -> "When { ${eventNode.parameters["condition"] ?: "false"} }"
             "Tap" -> {
                 val button = eventNode.parameters["button"] ?: "A1"
                 "Tap(Button.$button)"
