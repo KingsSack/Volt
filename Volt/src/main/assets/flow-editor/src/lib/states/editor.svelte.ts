@@ -50,8 +50,7 @@ class EditorState {
       }
 
       sidebarState.initSidebar(
-        this.currentOpMode?.type,
-        this.availableActions,
+        this.currentOpMode.type,
         this.availableEvents
       );
 
