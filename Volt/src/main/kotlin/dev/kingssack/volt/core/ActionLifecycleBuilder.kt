@@ -60,13 +60,13 @@ class ActionLifecycleBuilder {
                     }
                     !done
                 } catch (e: Throwable) {
-                    onError?.invoke(e)
                     try {
                         cleanup?.invoke()
                     } catch (ce: Throwable) {
                         onError?.invoke(ce)
                         throw ce
                     }
+                    onError?.invoke(e)
                     throw e
                 }
             }
