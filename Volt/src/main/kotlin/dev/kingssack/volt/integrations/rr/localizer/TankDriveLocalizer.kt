@@ -32,15 +32,13 @@ class TankDriveLocalizer(
     private var initialized = false
 
     override fun update(): PoseVelocity2d {
-        var meanLeftPos = 0.0
-        var meanLeftVel = 0.0
-        meanLeftPos /= leftEncoders.size.toDouble()
-        meanLeftVel /= leftEncoders.size.toDouble()
+        val leftPositionVelocity = leftEncoders.map { it.getPositionAndVelocity() }
+        val meanLeftPos = leftPositionVelocity.map { it.position.toDouble() }.average()
+        val meanLeftVel = leftPositionVelocity.map { it.velocity!!.toDouble() }.average()
 
-        var meanRightPos = 0.0
-        var meanRightVel = 0.0
-        meanRightPos /= rightEncoders.size.toDouble()
-        meanRightVel /= rightEncoders.size.toDouble()
+        val rightPositionVelocity = rightEncoders.map { it.getPositionAndVelocity() }
+        val meanRightPos = rightPositionVelocity.map { it.position.toDouble() }.average()
+        val meanRightVel = rightPositionVelocity.map { it.velocity!!.toDouble() }.average()
 
         if (!initialized) {
             initialized = true
