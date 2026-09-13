@@ -19,7 +19,7 @@ class FlowEditorApiHandler : WebHandler {
         private const val TAG = "FlowEditorApiHandler"
         private val gson = Gson()
 
-        // Thread-safe cache of OpModes (persisted to files)
+        // Thread-safe cache of OpModes
         private val opModes = ConcurrentHashMap<String, OpModeDefinition>()
     }
 
