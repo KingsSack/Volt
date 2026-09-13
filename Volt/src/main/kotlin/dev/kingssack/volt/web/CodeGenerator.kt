@@ -207,7 +207,7 @@ class CodeGenerator(
                         formatParameterValue(rawValue, paramMeta.type)
 
                     paramMeta.defaultValue != null -> null
-                    else -> null
+                    else -> throw IllegalArgumentException("Missing required parameter: ${paramMeta.name}")
                 }
             }
 
