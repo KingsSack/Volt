@@ -8,6 +8,7 @@ object ActionTracer {
     private const val MAX_TRACE_SIZE = 100
     private val trace = mutableListOf<TracedAction>()
     private val running = ConcurrentHashMap.newKeySet<TracedAction>()
+    private val failed = ConcurrentHashMap.newKeySet<TracedAction>()
 
     fun clear() {
         running.clear()
@@ -29,9 +30,26 @@ object ActionTracer {
         running.remove(action)
     }
 
+    context(action: TracedAction)
+    fun markFailed() {
+        running.remove(action)
+        failed.add(action)
+    }
+
     context(telemetry: Telemetry)
     fun writeTelemetry(): Unit =
         with(telemetry) {
+            if (failed.isNotEmpty()) {
+                addLine("=== Failed Actions ===")
+                failed
+                    .toList()
+                    .sortedBy { it.startTime }
+                    .forEachIndexed { i, action ->
+                        addData("[$i]", "${action.label} - ${action.error}")
+                    }
+                addLine()
+            }
+
             addLine("=== Running Actions ===")
             addLine()
 

@@ -29,6 +29,8 @@ class TracedAction(
                 else -> (System.nanoTime() - startTime!!) / 1_000_000
             }
 
+    var error: Exception? = null
+
     private var initialized = false
 
     override fun run(p: TelemetryPacket): Boolean {
@@ -38,11 +40,17 @@ class TracedAction(
             initialized = true
         }
 
-        val running = inner.run(p)
-        if (!running) {
-            endTime = System.nanoTime()
-            trace.markCompleted()
+        try {
+            val running = inner.run(p)
+            if (!running) {
+                endTime = System.nanoTime()
+                trace.markCompleted()
+            }
+            return running
+        } catch (e: Exception) {
+            error = e
+            trace.markFailed()
+            return false
         }
-        return running
     }
 }
