@@ -22,7 +22,7 @@ import java.util.*
 class PinpointLocalizer(
     hardwareMap: HardwareMap,
     inPerTick: Double,
-    override var pose: Pose2d,
+    pose: Pose2d,
     params: LocalizerParams = LocalizerParams(),
 ) : RoadRunnerLocalizer {
     /**
@@ -59,7 +59,14 @@ class PinpointLocalizer(
             resetPosAndIMU()
         }
 
+    private var txWorldPinpoint = pose
     private var txPinpointRobot = Pose2d(0.0, 0.0, 0.0)
+
+    override var pose
+        get() = txWorldPinpoint.times(txPinpointRobot)
+        set(value) {
+            txWorldPinpoint = value.times(txPinpointRobot.inverse())
+        }
 
     override fun update(): PoseVelocity2d {
         driver.update()
