@@ -71,7 +71,9 @@ class CodeGenerator(
     }
 
     private fun generateAnnotation(): String {
-        return "@VoltOpModeMeta(\"${opMode.name}\", \"Volt\")"
+        return "@VoltOpModeMeta(\"${
+            opMode.name.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
+        }\", \"Volt\")"
     }
 
     private fun generateClassDeclaration(className: String): String {
@@ -152,28 +154,34 @@ class CodeGenerator(
                 val button = eventNode.parameters["button"] ?: "A1"
                 "Tap(Button.$button)"
             }
+
             "Release" -> {
                 val button = eventNode.parameters["button"] ?: "A1"
                 "Release(Button.$button)"
             }
+
             "Hold" -> {
                 val button = eventNode.parameters["button"] ?: "A1"
                 val duration = eventNode.parameters["durationMs"] ?: "200.0"
                 "Hold(Button.$button, $duration)"
             }
+
             "DoubleTap" -> {
                 val button = eventNode.parameters["button"] ?: "A1"
                 "DoubleTap(Button.$button)"
             }
+
             "Change" -> {
                 val input = eventNode.parameters["input"] ?: "LEFT_STICK_X1"
                 "Change(AnalogInput.$input)"
             }
+
             "Threshold" -> {
                 val input = eventNode.parameters["input"] ?: "A1"
                 val min = eventNode.parameters["min"] ?: "0.3f"
                 "Threshold(AnalogInput.$input, $min)"
             }
+
             "Combo" -> {
                 val buttonsRaw = eventNode.parameters["buttons"]?.toString() ?: ""
                 val buttons = buttonsRaw.split(",").map { it.trim() }.filter { it.isNotEmpty() }
@@ -181,6 +189,7 @@ class CodeGenerator(
                 if (buttons.isEmpty()) "combo()"
                 else "combo(${buttons.joinToString(", ") { "Button.$it" }})"
             }
+
             else -> null
         }
 
@@ -196,6 +205,7 @@ class CodeGenerator(
                 when {
                     rawValue != null && rawValue.toString().isNotBlank() ->
                         formatParameterValue(rawValue, paramMeta.type)
+
                     paramMeta.defaultValue != null -> null
                     else -> null
                 }
@@ -214,7 +224,10 @@ class CodeGenerator(
             "Int" -> str.toDoubleOrNull()?.toInt()?.toString() ?: str
             "Long" -> "${str}L"
             "Boolean" -> str.lowercase()
-            "String" -> "\"${str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")}\""
+            "String" -> "\"${
+                str.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r")
+            }\""
+
             "Button" -> "Button.$str"
             "AnalogInput" -> "AnalogInput.$str"
             else -> str
