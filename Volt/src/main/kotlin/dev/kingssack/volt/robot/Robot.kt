@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.LED
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor
 import com.qualcomm.robotcore.hardware.Servo
 import dev.kingssack.volt.attachment.Attachment
+import dev.kingssack.volt.attachment.AttachmentState
 import dev.kingssack.volt.util.telemetry.ActionTracer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -187,6 +188,11 @@ open class Robot(
             for (attachment in attachments) {
                 attachment.update()
                 addLine()
+
+                if (attachment.isFaulted()) {
+                    _state.value = RobotState.Fault((attachment.state.value as AttachmentState.Fault).error)
+                    break
+                }
 
                 if (attachment.isBusy() && state.value == RobotState.Idle) {
                     _state.value = RobotState.Running
