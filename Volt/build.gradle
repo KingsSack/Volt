@@ -1,76 +1,132 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 buildscript {
-    ext.min_sdk_version = "11.0.0"
+    ext.min_sdk_version = "11.2.1"
     ext.min_rr_ftc_version = "0.1.23"
     ext.min_rr_version = "1.0.1"
-    ext.min_dash_version = "0.4.17"
-    ext.min_pp_version = "2.0.3"
+    ext.min_dash_version = "0.2.4+0.4.17"
+    ext.min_pp_version = "2.1.1"
     ext.min_pp_telemetry_version = "1.0.0"
-    ext.min_fullpanels_version = "1.0.2"
+    ext.min_fullpanels_version = "1.0.12"
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://repo.dairy.foundation/releases"
+        }
+    }
+    dependencies {
+        classpath "dev.frozenmilk:Load:0.2.4"
+    }
+}
+
+def isWindows = Os.isFamily(Os.FAMILY_WINDOWS)
+
+def npmExecutable = (System.getenv('PATH') ?: '')
+        .split(File.pathSeparator)
+        .collect { new File(it, isWindows ? 'npm.cmd' : 'npm') }
+        .find { it.isFile() }
+
+tasks.register('buildFlowEditor', Exec) {
+    description = 'Build the Volt Flow Editor SvelteKit frontend'
+    workingDir = file('src/main/assets/flow-editor')
+
+    if (npmExecutable == null) {
+        logger.lifecycle('Skipping Volt Flow Editor build: npm is not installed.')
+        enabled = false
+    } else if (isWindows) {
+        commandLine 'cmd', '/c', '(npm ci --ignore-scripts 2>nul || npm install) && npm run build'
+    } else {
+        commandLine 'sh', '-c', '(npm ci --ignore-scripts 2>/dev/null || npm install) && npm run build'
+    }
+
+    inputs.dir('src/main/assets/flow-editor/src')
+    inputs.file('src/main/assets/flow-editor/package.json')
+    inputs.file('src/main/assets/flow-editor/package-lock.json')
+    inputs.file('src/main/assets/flow-editor/svelte.config.js')
+    inputs.file('src/main/assets/flow-editor/vite.config.ts')
+    outputs.dir('src/main/assets/public')
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.dokka'
 
+plugins.withId("com.android.library") {
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn(buildFlowEditor)
+    }
+}
+
 group = 'dev.kingssack'
-version = '0.3.0'
+version = '0.4'
 
 android {
+    namespace = 'dev.kingssack.volt'
+
+    compileSdk 36
+
     defaultConfig {
-        minSdkVersion 24
-        //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 28
+        minSdk 24
     }
 
     buildFeatures {
         buildConfig = true
     }
 
-    compileSdk 36
-
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
-    namespace = 'dev.kingssack.volt'
 }
 
 repositories {
+    google()
+    mavenCentral()
     maven { url = 'https://maven.brott.dev/' }
     maven { url = 'https://maven.pedropathing.com' }
     maven { url = "https://mymaven.bylazar.com/releases" }
+    maven { url = 'https://repo.dairy.foundation/releases' }
 }
 
 dependencies {
-    api "org.firstinspires.ftc:RobotCore:$min_sdk_version"
-    api "org.firstinspires.ftc:Hardware:$min_sdk_version"
+    implementation "org.firstinspires.ftc:RobotCore:$min_sdk_version"
+    implementation "org.firstinspires.ftc:Hardware:$min_sdk_version"
 
-    api "com.acmerobotics.roadrunner:ftc:$min_rr_ftc_version"
-
-    api "com.acmerobotics.roadrunner:core:$min_rr_version"
-    api "com.acmerobotics.roadrunner:actions:$min_rr_version"
-
-    api "com.acmerobotics.dashboard:dashboard:$min_dash_version"
-
-    api "com.pedropathing:ftc:$min_pp_version"
-    api "com.pedropathing:telemetry:$min_pp_telemetry_version"
-
-    api "com.bylazar:fullpanels:$min_fullpanels_version"
-
-    implementation("org.nanohttpd:nanohttpd-websocket:2.3.1") {
-        exclude module: "nanohttpd"
+    api("com.acmerobotics.roadrunner:ftc:$min_rr_ftc_version") {
+        exclude group: "com.acmerobotics.dashboard"
+    }
+    api("com.acmerobotics.roadrunner:core:$min_rr_version") {
+        exclude group: "com.acmerobotics.dashboard"
+    }
+    api("com.acmerobotics.roadrunner:actions:$min_rr_version") {
+        exclude group: "com.acmerobotics.dashboard"
     }
 
-    implementation "org.jetbrains.kotlin:kotlin-reflect:2.2.20"
+    api "com.acmerobotics.slothboard:dashboard:$min_dash_version"
+    api "com.pedropathing:ftc:$min_pp_version"
+    api "com.pedropathing:telemetry:$min_pp_telemetry_version"
+    api "com.bylazar:fullpanels:$min_fullpanels_version"
+    api "dev.frozenmilk.sinister:Sloth:0.2.4"
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
+    implementation platform("org.jetbrains.kotlin:kotlin-bom:2.4.20")
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
+
+    testImplementation "org.firstinspires.ftc:RobotCore:$min_sdk_version"
+    testImplementation "org.firstinspires.ftc:Hardware:$min_sdk_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleVersion.set(version.toString())
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
 }

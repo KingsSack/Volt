@@ -1,29 +1,26 @@
 package org.firstinspires.ftc.teamcode.samples;
 
-import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import dev.kingssack.volt.opmode.autonomous.AutonomousMode;
-import dev.kingssack.volt.robot.Robot;
+import kotlin.Unit;
+import dev.kingssack.volt.util.Event.AutonomousEvent.Start;
 import org.jetbrains.annotations.NotNull;
 
-public class SampleAuto extends AutonomousMode<SampleRobot> {
+// An actual opmode would not be abstract
+@SuppressWarnings("unused")
+abstract public class SampleAuto extends AutonomousMode<SampleRobot> {
+    @NotNull SampleRobot robot = new SampleRobot(getHardwareMap());
+
     @Override
-    @NotNull
-    public SampleRobot createRobot(@NotNull HardwareMap hardwareMap) {
-        return new SampleRobot(hardwareMap);
+    protected @NotNull SampleRobot getRobot() {
+        return robot;
     }
 
     public SampleAuto() {
         super();
 
-        super.getActionSequence().add(this::sampleAction);
-    }
-
-    Action sampleAction() {
-        Robot.SequenceBuilder sequenceBuilder = new Robot.SequenceBuilder();
-        sequenceBuilder.then(super.getRobot().motor.goTo(0.5, 50));
-        sequenceBuilder.then(super.getRobot().motor.goTo(0.5, 0));
-        sequenceBuilder.then(super.getRobot().motor.goTo(0.5, 100));
-        return sequenceBuilder.build();
+        then(Start.INSTANCE, (builder, param) -> {
+            builder.unaryPlus(getRobot().score());
+            return Unit.INSTANCE;
+        });
     }
 }

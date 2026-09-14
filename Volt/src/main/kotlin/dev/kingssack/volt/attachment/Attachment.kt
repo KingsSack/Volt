@@ -1,108 +1,80 @@
 package dev.kingssack.volt.attachment
 
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.Action
-import com.qualcomm.robotcore.hardware.CRServo
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Servo
-import dev.kingssack.volt.robot.Robot
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.typeOf
+import dev.kingssack.volt.core.ActionLifecycleBuilder
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
-/** Represents an attachment to the robot. */
-abstract class Attachment {
-    private var motors: List<DcMotor> =
-        this::class
-            .memberProperties
-            .filter { it.returnType.isSubtypeOf(typeOf<DcMotor>()) }
-            .mapNotNull { property ->
-                try {
-                    property.getter.call(this) as? DcMotor
-                } catch (_: Throwable) {
-                    null
-                }
-            }
-    private var servos: List<Servo> =
-        this::class
-            .memberProperties
-            .filter { it.returnType.isSubtypeOf(typeOf<Servo>()) }
-            .mapNotNull { property ->
-                try {
-                    property.getter.call(this) as? Servo
-                } catch (_: Throwable) {
-                    null
-                }
-            }
-    private var crServos =
-        this::class
-            .memberProperties
-            .filter { it.returnType.isSubtypeOf(typeOf<CRServo>()) }
-            .mapNotNull { property ->
-                try {
-                    property.getter.call(this) as? CRServo
-                } catch (_: Throwable) {
-                    null
-                }
-            }
+/** Represents the state of an attachment. */
+sealed interface AttachmentState {
+    data object Idle : AttachmentState
 
-    protected var running = false
-    protected var robot: Robot? = null
+    data object Running : AttachmentState
 
-    open fun onRegister(robot: Robot) {
-        this.robot = robot
+    data class Fault(val error: Throwable) : AttachmentState
+}
+
+/** Base class for all attachments in the robot system. */
+abstract class Attachment(val name: String) {
+    private val _state = MutableStateFlow<AttachmentState>(AttachmentState.Idle)
+    val state: StateFlow<AttachmentState> = _state.asStateFlow()
+
+    private var lastFaultHash: Int? = null
+
+    /** Sets the state of the attachment to [newState]. */
+    protected fun setState(newState: AttachmentState) {
+        _state.value = newState
     }
 
-    /** Represents an action that can be run on the attachment. */
-    protected fun controlAction(
-        init: (() -> Unit)? = null,
-        update: (TelemetryPacket) -> Boolean,
-        onStop: (() -> Unit)? = null,
-    ): Action =
-        object : Action {
-            private var initialized = false
+    /** Checks if the attachment is currently busy (Running). */
+    fun isBusy() = state.value is AttachmentState.Running
 
-            override fun run(p: TelemetryPacket): Boolean {
-                if (!initialized) {
-                    try {
-                        init?.invoke()
-                    } finally {
-                        initialized = true
-                        running = true
-                    }
-                }
+    /** Checks if the attachment is currently in a faulted state. */
+    fun isFaulted() = state.value is AttachmentState.Fault
 
-                val finished =
-                    try {
-                        update(p)
-                    } catch (t: Throwable) {
-                        running = false
-                        throw t
-                    }
-
-                if (finished) {
-                    try {
-                        onStop?.invoke()
-                    } finally {
-                        running = false
-                    }
-                }
-
-                return finished
-            }
+    /** Ensures the attachment is in the Idle state, throwing an exception if not. */
+    fun requireReady() =
+        check(state.value is AttachmentState.Idle) {
+            "Attachment $name is not ready. Current state: ${state.value}"
         }
 
     /**
-     * Updates the attachment.
+     * Creates an action using the [ActionLifecycleBuilder].
      *
-     * @param telemetry for logging
+     * @return an [Action] that can be executed by an OpMode
      */
-    abstract fun update(telemetry: Telemetry)
+    protected fun action(block: ActionLifecycleBuilder.() -> Unit) =
+        ActionLifecycleBuilder()
+            .apply {
+                onStart { setState(AttachmentState.Running) }
+                onComplete { setState(AttachmentState.Idle) }
+                onError { error -> setState(AttachmentState.Fault(error)) }
+            }
+            .apply(block)
+            .build()
 
-    /** Stops the attachment. */
+    /** Updates the telemetry with the current state of the attachment. */
+    context(telemetry: Telemetry)
+    open fun update() =
+        with(telemetry) {
+            addLine("$name-->")
+            addData("State", state.value)
+            (state.value as? AttachmentState.Fault)?.let { fault ->
+                val hash = fault.error.message?.hashCode() ?: 0
+                if (lastFaultHash != hash) {
+                    addData("Error", fault.error.message ?: "Unknown")
+                    fault.error.stackTrace.take(2).forEachIndexed { i, line ->
+                        addData("Stack_$i", line.toString())
+                    }
+                    lastFaultHash = hash
+                }
+            } ?: run { lastFaultHash = null }
+        }
+
+    /** Stops the attachment and resets its state to Idle. */
     open fun stop() {
-        motors.forEach { it.power = 0.0 }
-        crServos.forEach { it.power = 0.0 }
+        _state.value = AttachmentState.Idle
     }
 }
