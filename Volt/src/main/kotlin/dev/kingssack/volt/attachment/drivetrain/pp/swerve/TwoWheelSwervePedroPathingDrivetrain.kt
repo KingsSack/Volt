@@ -1,12 +1,13 @@
 package dev.kingssack.volt.attachment.drivetrain.pp.swerve
 
-import com.pedropathing.follower.FollowerConstants
-import com.pedropathing.ftc.FollowerBuilder
-import com.pedropathing.ftc.drivetrains.CoaxialPod
-import com.pedropathing.ftc.drivetrains.SwerveConstants
-import com.pedropathing.ftc.localization.constants.TwoWheelConstants
-import com.pedropathing.geometry.Pose
-import com.pedropathing.paths.PathConstraints
+import com.pedropathing.algorithm.Algorithm
+import com.pedropathing.api.PoseFactory
+import com.pedropathing.follower.Follower
+import com.pedropathing.math.Pose
+import com.pedropathing.revhub.drivetrains.Swerve
+import com.pedropathing.revhub.drivetrains.SwerveConfig
+import com.pedropathing.revhub.localizers.TwoWheelConfig
+import com.pedropathing.revhub.localizers.TwoWheelLocalizer
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
 
@@ -14,26 +15,26 @@ import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
  * A swerve [PedroPathingDrivetrain] with a two-wheel localizer.
  *
  * @param hardwareMap The FTC hardware map
- * @param followerConstants constants for the path follower
- * @param localizerConstants constants for the two-wheel localizer
- * @param pathConstraints constraints for path following
- * @param driveConstants constants specific to the swerve drivetrain
+ * @param localizerConfig configuration used by the two-wheel localizer
+ * @param drivetrainConfig configuration specific to the swerve drivetrain
+ * @param algorithm used by the path follower
+ * @param poseFactory the pose factory to use
  * @param initialPose the robot's initial pose
  */
 class TwoWheelSwervePedroPathingDrivetrain(
     hardwareMap: HardwareMap,
-    followerConstants: FollowerConstants = FollowerConstants(),
-    localizerConstants: TwoWheelConstants = TwoWheelConstants(),
-    pathConstraints: PathConstraints = PathConstraints(0.99, 100.0, 1.0, 1.0),
-    driveConstants: SwerveConstants = SwerveConstants(),
-    vararg pods: CoaxialPod,
-    initialPose: Pose = Pose(),
+    localizerConfig: TwoWheelConfig,
+    drivetrainConfig: SwerveConfig,
+    algorithm: Algorithm,
+    poseFactory: PoseFactory = PoseFactory.radians(),
+    initialPose: Pose = poseFactory.of(0.0, 0.0, 0.0),
 ) :
     PedroPathingDrivetrain(
-        FollowerBuilder(followerConstants, hardwareMap)
-            .twoWheelLocalizer(localizerConstants)
-            .pathConstraints(pathConstraints)
-            .swerveDrivetrain(driveConstants, *pods)
-            .build(),
+        Follower(
+            TwoWheelLocalizer(hardwareMap, localizerConfig),
+            Swerve(hardwareMap, drivetrainConfig),
+            algorithm,
+        ),
+        poseFactory,
         initialPose,
     )

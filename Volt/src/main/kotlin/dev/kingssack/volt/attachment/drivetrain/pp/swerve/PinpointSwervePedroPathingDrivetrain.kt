@@ -1,39 +1,40 @@
 package dev.kingssack.volt.attachment.drivetrain.pp.swerve
 
-import com.pedropathing.follower.FollowerConstants
-import com.pedropathing.ftc.FollowerBuilder
-import com.pedropathing.ftc.drivetrains.CoaxialPod
-import com.pedropathing.ftc.drivetrains.SwerveConstants
-import com.pedropathing.ftc.localization.constants.PinpointConstants
-import com.pedropathing.geometry.Pose
-import com.pedropathing.paths.PathConstraints
+import com.pedropathing.algorithm.Algorithm
+import com.pedropathing.api.PoseFactory
+import com.pedropathing.follower.Follower
+import com.pedropathing.math.Pose
+import com.pedropathing.revhub.drivetrains.Swerve
+import com.pedropathing.revhub.drivetrains.SwerveConfig
+import com.pedropathing.revhub.localizers.PinpointConfig
+import com.pedropathing.revhub.localizers.PinpointLocalizer
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
 
 /**
  * A swerve [PedroPathingDrivetrain] with a Pinpoint localizer.
  *
- * @param hardwareMap The FTC hardware map
- * @param followerConstants constants for the path follower
- * @param localizerConstants constants for the pinpoint localizer
- * @param pathConstraints constraints for path following
- * @param driveConstants constants specific to the swerve drivetrain
+ * @param hardwareMap the FTC hardware map
+ * @param localizerConfig configuration used by the pinpoint localizer
+ * @param drivetrainConfig configuration specific to the swerve drivetrain
+ * @param algorithm used by the path follower
+ * @param poseFactory the pose factory to use
  * @param initialPose the robot's initial pose
  */
 class PinpointSwervePedroPathingDrivetrain(
     hardwareMap: HardwareMap,
-    followerConstants: FollowerConstants = FollowerConstants(),
-    localizerConstants: PinpointConstants = PinpointConstants(),
-    pathConstraints: PathConstraints = PathConstraints(0.99, 100.0, 1.0, 1.0),
-    driveConstants: SwerveConstants = SwerveConstants(),
-    vararg pods: CoaxialPod,
-    initialPose: Pose = Pose(),
+    localizerConfig: PinpointConfig,
+    drivetrainConfig: SwerveConfig,
+    algorithm: Algorithm,
+    poseFactory: PoseFactory = PoseFactory.radians(),
+    initialPose: Pose = poseFactory.of(0.0, 0.0, 0.0),
 ) :
     PedroPathingDrivetrain(
-        FollowerBuilder(followerConstants, hardwareMap)
-            .pinpointLocalizer(localizerConstants)
-            .pathConstraints(pathConstraints)
-            .swerveDrivetrain(driveConstants, *pods)
-            .build(),
+        Follower(
+            PinpointLocalizer(hardwareMap, localizerConfig),
+            Swerve(hardwareMap, drivetrainConfig),
+            algorithm,
+        ),
+        poseFactory,
         initialPose,
     )

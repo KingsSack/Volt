@@ -1,6 +1,5 @@
 package dev.kingssack.volt.opmode.autonomous
 
-import com.pedropathing.geometry.Pose
 import dev.kingssack.volt.opmode.VoltOpMode
 import dev.kingssack.volt.opmode.VoltOpModeMeta
 import dev.kingssack.volt.robot.Robot
@@ -80,12 +79,12 @@ abstract class DualAutonomousMode<R : Robot> : AutonomousMode<R>() {
     /**
      * @return [this] if red alliance is selected, or [this] mirrored if blue alliance is selected
      */
-    fun Pose.mirrorIfBlue(): Pose = if (color == AllianceColor.BLUE) this.mirror() else this
+    // fun Pose.mirrorIfBlue(): Pose = if (color == AllianceColor.BLUE) this.mirror() else this
 
     /**
      * @return [this] if blue alliance is selected, or [this] mirrored if red alliance is selected
      */
-    fun Pose.mirrorIfRed(): Pose = if (color == AllianceColor.RED) this.mirror() else this
+    // fun Pose.mirrorIfRed(): Pose = if (color == AllianceColor.RED) this.mirror() else this
 }
 
 enum class AllianceColor {
