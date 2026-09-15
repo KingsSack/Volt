@@ -1,3 +1,5 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 pluginManagement {
     repositories {
         google()
@@ -6,6 +8,17 @@ pluginManagement {
     }
 }
 
-include ':FtcRobotController'
-include ':TeamCode'
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = 'https://maven.brott.dev/' }
+        maven { url = 'https://maven.pedropathing.com' }
+        maven { url = 'https://mymaven.bylazar.com/releases' }
+        maven { url = 'https://repo.dairy.foundation/releases' }
+    }
+}
+
+rootProject.name = "Volt"
 include ':Volt'

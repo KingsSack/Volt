@@ -52,6 +52,7 @@ tasks.register('buildFlowEditor', Exec) {
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'maven-publish'
 
 plugins.withId("com.android.library") {
     tasks.matching { it.name == "preBuild" }.configureEach {
@@ -60,7 +61,7 @@ plugins.withId("com.android.library") {
 }
 
 group = 'dev.kingssack'
-version = '0.4'
+version = '0.4.0'
 
 android {
     namespace = 'dev.kingssack.volt'
@@ -71,12 +72,42 @@ android {
         minSdk 24
     }
 
-    buildFeatures {
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    /* buildFeatures {
         buildConfig = true
     }
 
     packagingOptions {
         jniLibs.useLegacyPackaging true
+    } */
+
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create('release', MavenPublication) {
+                from components.release
+                groupId = group
+                artifactId = 'volt'
+                version = version
+
+                pom {
+                    name = "Volt"
+                    description = 'A library that enhanced developer experience for FIRST Tech Challenge'
+                    url = 'https://github.com/KingsSack/Volt'
+                }
+            }
+        }
     }
 }
 
@@ -129,6 +160,5 @@ dokka {
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
-        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
