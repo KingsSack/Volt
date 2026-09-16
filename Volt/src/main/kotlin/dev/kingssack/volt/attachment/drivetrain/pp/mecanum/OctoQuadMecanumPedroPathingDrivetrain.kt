@@ -6,24 +6,24 @@ import com.pedropathing.follower.Follower
 import com.pedropathing.math.Pose
 import com.pedropathing.revhub.drivetrains.Mecanum
 import com.pedropathing.revhub.drivetrains.MecanumConfig
-import com.pedropathing.revhub.localizers.OTOSConfig
-import com.pedropathing.revhub.localizers.OTOSLocalizer
+import com.pedropathing.revhub.localizers.OctoQuadConfig
+import com.pedropathing.revhub.localizers.OctoQuadLocalizer
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
 
 /**
- * A mecanum [PedroPathingDrivetrain] with an OTOS localizer.
+ * A mecanum [PedroPathingDrivetrain] with an OctoQuad localizer.
  *
  * @param hardwareMap the FTC hardware map
- * @param localizerConfig configuration used by the OTOS localizer
+ * @param localizerConfig configuration used by the OctoQuad localizer
  * @param drivetrainConfig configuration specific to the mecanum drivetrain
  * @param algorithm used by the path follower
  * @param poseFactory the pose factory to use
  * @param initialPose the robot's initial pose
  */
-class OTOSMecanumPedroPathingDrivetrain(
+class OctoQuadMecanumPedroPathingDrivetrain(
     hardwareMap: HardwareMap,
-    localizerConfig: OTOSConfig,
+    localizerConfig: OctoQuadConfig,
     drivetrainConfig: MecanumConfig,
     algorithm: Algorithm,
     poseFactory: PoseFactory = PoseFactory.radians(),
@@ -31,7 +31,7 @@ class OTOSMecanumPedroPathingDrivetrain(
 ) :
     PedroPathingDrivetrain(
         Follower(
-            OTOSLocalizer(hardwareMap, localizerConfig),
+            OctoQuadLocalizer(hardwareMap, localizerConfig),
             Mecanum(hardwareMap, drivetrainConfig),
             algorithm,
         ),

@@ -6,8 +6,8 @@ buildscript {
     ext.min_rr_ftc_version = "0.1.23"
     ext.min_rr_version = "1.0.1"
     ext.min_dash_version = "0.2.4+0.4.17"
-    ext.min_pp_version = "2.1.1"
-    ext.min_pp_telemetry_version = "1.0.0"
+    ext.min_pp_revhub_version = "3.0.0"
+    ext.min_pp_tuning_version = "1.0.0"
     ext.min_fullpanels_version = "1.0.12"
 
     repositories {
@@ -104,8 +104,10 @@ dependencies {
     }
 
     api "com.acmerobotics.slothboard:dashboard:$min_dash_version"
-    api "com.pedropathing:ftc:$min_pp_version"
-    api "com.pedropathing:telemetry:$min_pp_telemetry_version"
+
+    api "com.pedropathing:revhub:$min_pp_revhub_version"
+    api "com.pedropathing:tuning:$min_pp_tuning_version"
+
     api "com.bylazar:fullpanels:$min_fullpanels_version"
     api "dev.frozenmilk.sinister:Sloth:0.2.4"
 

@@ -7,25 +7,25 @@ import com.pedropathing.math.Pose
 import com.pedropathing.revhub.drivetrains.Swerve
 import com.pedropathing.revhub.drivetrains.SwerveConfig
 import com.pedropathing.revhub.drivetrains.SwervePod
-import com.pedropathing.revhub.localizers.OTOSConfig
-import com.pedropathing.revhub.localizers.OTOSLocalizer
+import com.pedropathing.revhub.localizers.OctoQuadConfig
+import com.pedropathing.revhub.localizers.OctoQuadLocalizer
 import com.qualcomm.robotcore.hardware.HardwareMap
 import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
 
 /**
- * A swerve [PedroPathingDrivetrain] with an OTOS localizer.
+ * A swerve [PedroPathingDrivetrain] with an OctoQuad localizer.
  *
  * @param hardwareMap the FTC hardware map
- * @param localizerConfig configuration used by the OTOS localizer
+ * @param localizerConfig configuration used by the OctoQuad localizer
  * @param drivetrainConfig configuration specific to the swerve drivetrain
  * @param algorithm used by the path follower
  * @param pods used by the serve drivetrain
  * @param poseFactory the pose factory to use
  * @param initialPose the robot's initial pose
  */
-class OTOSSwervePedroPathingDrivetrain(
+class OctoQuadSwervePedroPathingDrivetrain(
     hardwareMap: HardwareMap,
-    localizerConfig: OTOSConfig,
+    localizerConfig: OctoQuadConfig,
     drivetrainConfig: SwerveConfig,
     algorithm: Algorithm,
     vararg pods: SwervePod,
@@ -34,7 +34,7 @@ class OTOSSwervePedroPathingDrivetrain(
 ) :
     PedroPathingDrivetrain(
         Follower(
-            OTOSLocalizer(hardwareMap, localizerConfig),
+            OctoQuadLocalizer(hardwareMap, localizerConfig),
             Swerve(hardwareMap, drivetrainConfig, *pods),
             algorithm,
         ),
