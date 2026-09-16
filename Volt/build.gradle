@@ -2,22 +2,24 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
-    ext.min_sdk_version = "11.2.1"
+    ext.min_sdk_version = "12.0.0"
     ext.min_rr_ftc_version = "0.1.23"
     ext.min_rr_version = "1.0.1"
-    ext.min_dash_version = "0.2.4+0.4.17"
+    ext.min_sloth_version = "0.3.1"
+    ext.min_dash_version = "0.3.1+0.6.0"
+    ext.min_fullpanels_version = "0.3.1+1.0.13"
     ext.min_pp_revhub_version = "3.0.0"
     ext.min_pp_tuning_version = "1.0.0"
-    ext.min_fullpanels_version = "1.0.12"
 
     repositories {
+        google()
         mavenCentral()
         maven {
             url "https://repo.dairy.foundation/releases"
         }
     }
     dependencies {
-        classpath "dev.frozenmilk:Load:0.2.4"
+        classpath "dev.frozenmilk:Load:$min_sloth_version"
     }
 }
 
@@ -52,6 +54,7 @@ tasks.register('buildFlowEditor', Exec) {
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'maven-publish'
 
 plugins.withId("com.android.library") {
     tasks.matching { it.name == "preBuild" }.configureEach {
@@ -60,7 +63,7 @@ plugins.withId("com.android.library") {
 }
 
 group = 'dev.kingssack'
-version = '0.4'
+version = '0.4.0'
 
 android {
     namespace = 'dev.kingssack.volt'
@@ -71,12 +74,34 @@ android {
         minSdk 24
     }
 
-    buildFeatures {
-        buildConfig = true
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-    packagingOptions {
-        jniLibs.useLegacyPackaging true
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create('release', MavenPublication) {
+                from components.release
+                groupId = group
+                artifactId = 'volt'
+                version = version
+
+                pom {
+                    name = "Volt"
+                    description = 'A library that enhanced developer experience for FIRST Tech Challenge'
+                    url = 'https://github.com/KingsSack/Volt'
+                }
+            }
+        }
     }
 }
 
@@ -90,8 +115,10 @@ repositories {
 }
 
 dependencies {
+    //noinspection Aligned16KB
     implementation "org.firstinspires.ftc:RobotCore:$min_sdk_version"
     implementation "org.firstinspires.ftc:Hardware:$min_sdk_version"
+    implementation "org.firstinspires.ftc:FtcCommon:$min_sdk_version"
 
     api("com.acmerobotics.roadrunner:ftc:$min_rr_ftc_version") {
         exclude group: "com.acmerobotics.dashboard"
@@ -103,20 +130,18 @@ dependencies {
         exclude group: "com.acmerobotics.dashboard"
     }
 
+    api "dev.frozenmilk.sinister:Sloth:$min_sloth_version"
     api "com.acmerobotics.slothboard:dashboard:$min_dash_version"
+//    api "com.bylazar.sloth:fullpanels:$min_fullpanels_version"
 
     api "com.pedropathing:revhub:$min_pp_revhub_version"
     api "com.pedropathing:tuning:$min_pp_tuning_version"
 
-    api "com.bylazar:fullpanels:$min_fullpanels_version"
-    api "dev.frozenmilk.sinister:Sloth:0.2.4"
-
     implementation platform("org.jetbrains.kotlin:kotlin-bom:2.4.20")
-    implementation "org.jetbrains.kotlin:kotlin-reflect"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0"
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0'
 
-    testImplementation "org.firstinspires.ftc:RobotCore:$min_sdk_version"
-    testImplementation "org.firstinspires.ftc:Hardware:$min_sdk_version"
     testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3'
 }
 
@@ -129,6 +154,5 @@ dokka {
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
-        freeCompilerArgs.add("-Xcontext-parameters")
     }
 }
