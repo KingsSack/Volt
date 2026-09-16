@@ -16,7 +16,7 @@ import dev.kingssack.volt.attachment.drivetrain.pp.PedroPathingDrivetrain
  *
  * @param hardwareMap the FTC hardware map
  * @param localizerConfig configuration used by the OctoQuad localizer
- * @param drivetrainConfig configuration specific to the mecanaum drivetrain
+ * @param drivetrainConfig configuration specific to the mecanum drivetrain
  * @param algorithm used by the path follower
  * @param poseFactory the pose factory to use
  * @param initialPose the robot's initial pose
