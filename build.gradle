@@ -4,10 +4,10 @@ plugins {
     id 'org.jetbrains.dokka' version '2.2.0'
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
+dokka {
+    dokkaPublications.html {
+        moduleName.set("Volt")
+        outputDirectory.set(layout.projectDirectory.dir("docs/dist/api"))
     }
 }
 
