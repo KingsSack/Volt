@@ -72,7 +72,7 @@ Start then {
 Triggers the first time a trigger becomes true.
 
 ```kotlin
-First({ robot.drivetrain.pose.x > 100 }) then {
+First({ robot.drivetrain.pose.x() > 100.0 }) then {
     +robot.launcher.enable()
 }
 ```
@@ -82,7 +82,7 @@ First({ robot.drivetrain.pose.x > 100 }) then {
 Triggers each tick a trigger is true.
 
 ```kotlin
-When({ robot.drivetrain.pose.x == 100 }) then {
+When({ robot.drivetrain.pose.x() == 100.0 }) then {
     +robot.launcher.enable()
 }
 ```
