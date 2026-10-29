@@ -106,10 +106,11 @@ The simplest built-in attachments control a single hardware actuator. These type
 #### Constructor Parameters
 
 1. **`name: String`**: The name of the `DcMotorAttachment`
-2. **`motor: DcMotor`**: The motor to control
-3. **`maxPosition: Int`**: The maximum position of the motor in encoder ticks
-4. **`minPosition: Int`**: The minimum position of the motor in encoder ticks
-5. **`direction: DcMotorSimple.Direction`**: The direction the motor should spin
+2. **`motor: DcMotor`**: The motor to controlS
+3. **`idlePower: Double`**: The power to apply to the motor when it is idle
+4. **`maxPosition: Int`**: The maximum position of the motor in encoder ticks
+5. **`minPosition: Int`**: The minimum position of the motor in encoder ticks
+6. **`direction: DcMotorSimple.Direction`**: The direction the motor should spin
 
 #### Properties
 
@@ -118,7 +119,7 @@ The simplest built-in attachments control a single hardware actuator. These type
 #### Actions
 
 - **`reset()`**: Resets the motor's encoder
-- **`goTo(power: Double, position: Int)`**: Moves the motor to the specified `position` in encoder ticks at the specified `power`
+- **`goTo(power: Double, position: Ticks)`**: Moves the motor to the specified `position` in encoder ticks at the specified `power`
 
 #### Telemetry
 
