@@ -20,13 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
-      - name: Install, build, and upload
-        uses: withastro/action@v6
-        with:
-          path: docs
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -36,10 +29,10 @@ jobs:
         run: chmod +x gradlew
       - name: Build dokka
         run: ./gradlew dokkaGenerate
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Install, build, and upload
+        uses: withastro/action@v6
         with:
-          path: docs/dist
+          path: docs
 
   deploy:
     needs: build
