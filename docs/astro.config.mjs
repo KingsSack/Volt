@@ -27,7 +27,7 @@ export default defineConfig({
       },
       editLink: {
         baseUrl:
-          "https://github.com/KingsSack/Volt/edit/master/docs/",
+          "https://github.com/KingsSack/Volt/edit/main/docs/",
       },
       sidebar: [
         {
