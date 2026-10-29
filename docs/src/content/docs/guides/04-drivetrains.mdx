@@ -68,7 +68,7 @@ Let's use a mecanum drivetrain, drive encoder localization, and PedroPathing.
 
 ### 2. Create a `DrivetrainRobot`
 
-Make a `Robot` class that extends `DrivetrainRobot`. This gives your [Robot](../01-robots) access to a `drivetrain` instance.
+Create a `Robot` class that extends `DrivetrainRobot`. This gives your [Robot](../01-robots) access to a `drivetrain` instance.
 
 <Tabs syncKey="language">
 
@@ -99,25 +99,32 @@ public class MyRobot extends DrivetrainRobot {
 
 Pass a generic type parameter that inherits `Drivetrain`. This lets Volt know what type of `Drivetrain` class your [Robot](../01-robots) uses.
 
-In this case we'll use `DriveEncoderMecanumPedroPathingDrivetrain`:
+In this case we'll use `PinpointMecanumPedroPathingDrivetrain`:
 
 <Tabs syncKey="language">
 
 <TabItem label="Kotlin">
 
-```kotlin "<DriveEncoderMecanumPedroPathingDrivetrain>"
+```kotlin "<PinpointMecanumPedroPathingDrivetrain>"
 class MyRobot(hardwareMap: HardwareMap) :
-    DrivetrainRobot<DriveEncoderMecanumPedroPathingDrivetrain>(hardwareMap)
+    DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain>(
+        hardwareMap,
+        PinpointMecanumPedroPathingDrivetrain(
+            hardwareMap,
+        )
+    )
 ```
 
 </TabItem>
 
 <TabItem label="Java">
 
-```java "<DriveEncoderMecanumPedroPathingDrivetrain>"
-public class MyRobot extends DrivetrainRobot<DriveEncoderMecanumPedroPathingDrivetrain> {
+```java "<PinpointMecanumPedroPathingDrivetrain>"
+public class MyRobot extends DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain> {
     public MyRobot(HardwareMap hardwareMap) {
-        super(hardwareMap);
+        super(getHardwareMap(), new PinpointMecanumPedroPathingDrivetrain(
+            getHardwareMap()
+        ));
     }
 }
 ```
@@ -136,29 +143,75 @@ Learn how to tune your robot on the [Tuning Your Robot](../../reference/tuning) 
 
 :::
 
-For our `DriveEncoderMecanumDrivetrain`, we'll supply simple `FollowerConstants`, `DriveEncoderConstants`, and `MecanumConstants`.
+For our `PinpointMecanumPedroPathingDrivetrain`, we'll supply `PinpointConfig`, `MecanumConfig`, and use the `Foresight` algorithm.
 
 <Tabs syncKey="language">
 
 <TabItem label="Kotlin">
 
-```kotlin {4-17}
+```kotlin {6-62}
 class MyRobot(hardwareMap: HardwareMap) :
-    DrivetrainRobot<DriveEncoderMecanumPedroPathingDrivetrain>(
+    DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain>(
         hardwareMap,
-        DriveEncoderMecanumPedroPathingDrivetrain(
-            hardwareMap = hardwareMap,
-            followerConstants = FollowerConstants()
-                .mass(9.8)
-                .translationalPIDFCoefficients(PIDFCoefficients(0.02, 0.0, 0.0, 0.07)),
-            localizerConstants = DriveEncoderConstants()
-                .robotWidth(14.0)
-                .robotLength(9.0)
-                .forwardTicksToInches(0.0057725)
-                .strafeTicksToInches(0.0069642)
-                .turnTicksToInches(0.009961),
-            driveConstants = MecanumConstants()
-                .maxPower(0.8),
+        PinpointMecanumPedroPathingDrivetrain(
+            hardwareMap,
+            PinpointConfig {
+                it.name.set("pinpoint")
+                it.xPodOffset.set(2.187)
+                it.yPodOffset.set(-4.572)
+                it.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+                it.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            },
+            MecanumConfig {
+                it.frontLeftName.set("lf")
+                it.backLeftName.set("lr")
+                it.frontRightName.set("rf")
+                it.backRightName.set("rr")
+
+                it.frontLeftDirection.set(DcMotorSimple.Direction.FORWARD)
+                it.backLeftDirection.set(DcMotorSimple.Direction.FORWARD)
+                it.frontRightDirection.set(DcMotorSimple.Direction.REVERSE)
+                it.backRightDirection.set(DcMotorSimple.Direction.REVERSE)
+
+                it.manualBrakeMode.set(true)
+            },
+            Foresight(
+                ForesightConfig {
+                    val primaryTranslationalForward = Controller.proportional(0.3)
+                    val secondaryTranslationalForward = Controller.proportional(0.1)
+                    val primaryTranslationalLateral = Controller.proportional(0.3)
+                    val secondaryTranslationalLateral = Controller.proportional(0.1)
+
+                    it.forwardTranslational.set(
+                        Controller.piecewise(secondaryTranslationalForward)
+                            .put(2.5, primaryTranslationalForward)
+                    )
+                    it.strafeTranslational.set(
+                        Controller.piecewise(secondaryTranslationalLateral)
+                            .put(2.5, primaryTranslationalLateral)
+                    )
+
+                    it.coast.set(Controller.proportionalFeedforward(0.010978350889324107))
+                    it.brake.set(Controller.proportionalFeedforward(0.008731598255925491))
+
+                    it.headingFeedback.set(Controller.proportional(5.258721785960744))
+                    it.headingBrakeCoefficients.set(
+                        Vector2D.cartesian(0.05642143125655298, 0.0063829525363003695)
+                    )
+
+                    it.linearBrakeCoefficients.set(
+                        Matrix.diag(0.10605894992901523, 0.08719146175596092)
+                    )
+                    it.quadraticBrakeCoefficients.set(
+                        Matrix.diag(0.0014663966976606565, 0.0013837064502458813)
+                    )
+
+                    it.maxAchievableForwardVelocity.set(72.72923108818539)
+                    it.maxAchievableStrafeVelocity.set(52.34323936525474)
+                    it.naturalForwardDeceleration.set(85.01144677379789)
+                    it.naturalStrafeDeceleration.set(104.49787535782846)
+                }
+            ),
         ),
     )
 ```
@@ -167,26 +220,56 @@ class MyRobot(hardwareMap: HardwareMap) :
 
 <TabItem label="Java">
 
-```java {5-20}
-public class MyRobot extends DrivetrainRobot<DriveEncoderMecanumPedroPathingDrivetrain> {
+```java {7-49}
+public class MyRobot extends DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain> {
     public MyRobot(HardwareMap hardwareMap) {
         super(
             hardwareMap,
-            new DriveEncoderMecanumPedroPathingDrivetrain(
-                hardwareMap,
-                new FollowerConstants()
-                    .mass(9.8)
-                    .translationalPIDFCoefficients(new PIDFCoefficients(0.02, 0.0, 0.0, 0.07)),
-                new DriveEncoderConstants()
-                    .robotWidth(14.0)
-                    .robotLength(9.0)
-                    .forwardTicksToInches(0.0057725)
-                    .strafeTicksToInches(0.0069642)
-                    .turnTicksToInches(0.009961),
-                new PathConstraints(),
-                new MecanumConstants()
-                    .maxPower(0.8),
-                new Pose()
+            new PinpointMecanumPedroPathingDrivetrain(
+                getHardwareMap(),
+                new PinpointConfig(c -> {
+                    c.name.set("pinpoint");
+                    c.xPodOffset.set(2.187);
+                    c.yPodOffset.set(-4.572);
+                    c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                    c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                }),
+                new MecanumConfig(c -> {
+                    c.frontLeftName.set("lf");
+                    c.backLeftName.set("lr");
+                    c.frontRightName.set("rf");
+                    c.backRightName.set("rr");
+
+                    c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                    c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                    c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
+                    c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
+
+                    c.manualBrakeMode.set(true);
+                }),
+                new Foresight(new ForesightConfig(c -> {
+                    Controller primaryTranslationalForward = Controller.proportional(0.3);
+                    Controller secondaryTranslationalForward = Controller.proportional(0.1);
+                    Controller primaryTranslationalLateral = Controller.proportional(0.3);
+                    Controller secondaryTranslationalLateral = Controller.proportional(0.1);
+
+                    c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                    c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+
+                    c.coast.set(Controller.proportionalFeedforward(0.010978350889324107));
+                    c.brake.set(Controller.proportionalFeedforward(0.008731598255925491));
+
+                    c.headingFeedback.set(Controller.proportional(5.258721785960744));
+                    c.headingBrakeCoefficients.set(Vector2D.cartesian(0.05642143125655298, 0.0063829525363003695));
+
+                    c.linearBrakeCoefficients.set(Matrix.diag(0.10605894992901523, 0.08719146175596092));
+                    c.quadraticBrakeCoefficients.set(Matrix.diag(0.0014663966976606565, 0.0013837064502458813));
+
+                    c.maxAchievableForwardVelocity.set(72.72923108818539);
+                    c.maxAchievableStrafeVelocity.set(52.34323936525474);
+                    c.naturalForwardDeceleration.set(85.01144677379789);
+                    c.naturalStrafeDeceleration.set(104.49787535782846);
+                }))
             )
         );
     }
@@ -206,31 +289,81 @@ In this case, we would have calculated the [Robot](../01-robots)'s mass, driving
 <TabItem label="Kotlin">
 
 ```kotlin
-import com.pedropathing.control.PIDFCoefficients
-import com.pedropathing.follower.FollowerConstants
-import com.pedropathing.ftc.drivetrains.MecanumConstants
-import com.pedropathing.ftc.localization.constants.DriveEncoderConstants
-import com.pedropathing.geometry.Pose
+import com.pedropathing.algorithm.Foresight
+import com.pedropathing.algorithm.ForesightConfig
+import com.pedropathing.controllers.Controller
+import com.pedropathing.math.Matrix
+import com.pedropathing.math.Vector2D
+import com.pedropathing.revhub.drivetrains.MecanumConfig
+import com.pedropathing.revhub.localizers.PinpointConfig
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.HardwareMap
+import dev.kingssack.volt.attachment.drivetrain.pp.mecanum.PinpointMecanumPedroPathingDrivetrain
 import dev.kingssack.volt.robot.DrivetrainRobot
-import dev.kingssack.volt.attachment.drivetrain.pp.mecanum.DriveEncoderMecanumPedroPathingDrivetrain
 
 class MyRobot(hardwareMap: HardwareMap) :
-    DrivetrainRobot<DriveEncoderMecanumPedroPathingDrivetrain>(
+    DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain>(
         hardwareMap,
-        DriveEncoderMecanumPedroPathingDrivetrain(
-            hardwareMap = hardwareMap,
-            followerConstants = FollowerConstants()
-                .mass(9.8)
-                .translationalPIDFCoefficients(PIDFCoefficients(0.02, 0.0, 0.0, 0.07)),
-            localizerConstants = DriveEncoderConstants()
-                .robotWidth(14.0)
-                .robotLength(9.0)
-                .forwardTicksToInches(0.0057725)
-                .strafeTicksToInches(0.0069642)
-                .turnTicksToInches(0.009961),
-            driveConstants = MecanumConstants()
-                .maxPower(0.8),
+        PinpointMecanumPedroPathingDrivetrain(
+            hardwareMap,
+            PinpointConfig {
+                it.name.set("pinpoint")
+                it.xPodOffset.set(2.187)
+                it.yPodOffset.set(-4.572)
+                it.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+                it.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            },
+            MecanumConfig {
+                it.frontLeftName.set("lf")
+                it.backLeftName.set("lr")
+                it.frontRightName.set("rf")
+                it.backRightName.set("rr")
+
+                it.frontLeftDirection.set(DcMotorSimple.Direction.FORWARD)
+                it.backLeftDirection.set(DcMotorSimple.Direction.FORWARD)
+                it.frontRightDirection.set(DcMotorSimple.Direction.REVERSE)
+                it.backRightDirection.set(DcMotorSimple.Direction.REVERSE)
+
+                it.manualBrakeMode.set(true)
+            },
+            Foresight(
+                ForesightConfig {
+                    val primaryTranslationalForward = Controller.proportional(0.3)
+                    val secondaryTranslationalForward = Controller.proportional(0.1)
+                    val primaryTranslationalLateral = Controller.proportional(0.3)
+                    val secondaryTranslationalLateral = Controller.proportional(0.1)
+
+                    it.forwardTranslational.set(
+                        Controller.piecewise(secondaryTranslationalForward)
+                            .put(2.5, primaryTranslationalForward)
+                    )
+                    it.strafeTranslational.set(
+                        Controller.piecewise(secondaryTranslationalLateral)
+                            .put(2.5, primaryTranslationalLateral)
+                    )
+
+                    it.coast.set(Controller.proportionalFeedforward(0.010978350889324107))
+                    it.brake.set(Controller.proportionalFeedforward(0.008731598255925491))
+
+                    it.headingFeedback.set(Controller.proportional(5.258721785960744))
+                    it.headingBrakeCoefficients.set(
+                        Vector2D.cartesian(0.05642143125655298, 0.0063829525363003695)
+                    )
+
+                    it.linearBrakeCoefficients.set(
+                        Matrix.diag(0.10605894992901523, 0.08719146175596092)
+                    )
+                    it.quadraticBrakeCoefficients.set(
+                        Matrix.diag(0.0014663966976606565, 0.0013837064502458813)
+                    )
+
+                    it.maxAchievableForwardVelocity.set(72.72923108818539)
+                    it.maxAchievableStrafeVelocity.set(52.34323936525474)
+                    it.naturalForwardDeceleration.set(85.01144677379789)
+                    it.naturalStrafeDeceleration.set(104.49787535782846)
+                }
+            ),
         ),
     )
 ```
@@ -240,35 +373,68 @@ class MyRobot(hardwareMap: HardwareMap) :
 <TabItem label="Java">
 
 ```java
-import com.pedropathing.control.PIDFCoefficients;
-import com.pedropathing.follower.FollowerConstants;
-import com.pedropathing.ftc.drivetrains.MecanumConstants;
-import com.pedropathing.ftc.localization.constants.DriveEncoderConstants;
-import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathConstraints;
+import com.pedropathing.algorithm.Foresight;
+import com.pedropathing.algorithm.ForesightConfig;
+import com.pedropathing.controllers.Controller;
+import com.pedropathing.math.Matrix;
+import com.pedropathing.math.Vector2D;
+import com.pedropathing.revhub.drivetrains.MecanumConfig;
+import com.pedropathing.revhub.localizers.PinpointConfig;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import dev.kingssack.volt.attachment.drivetrain.pp.mecanum.PinpointMecanumPedroPathingDrivetrain;
 import dev.kingssack.volt.robot.DrivetrainRobot;
-import dev.kingssack.volt.attachment.drivetrain.pp.mecanum.DriveEncoderMecanumPedroPathingDrivetrain;
 
-public class MyRobot extends DrivetrainRobot<PedroPathingDriveEncoderMecanumDrivetrain> {
+public class MyRobot extends DrivetrainRobot<PinpointMecanumPedroPathingDrivetrain> {
     public MyRobot(HardwareMap hardwareMap) {
         super(
             hardwareMap,
-            new DriveEncoderPedroPathingMecanumDrivetrain(
-                hardwareMap,
-                new FollowerConstants()
-                    .mass(9.8)
-                    .translationalPIDFCoefficients(new PIDFCoefficients(0.02, 0, 0, 0.07)),
-                new DriveEncoderConstants()
-                    .robotWidth(14.0)
-                    .robotLength(9.0)
-                    .forwardTicksToInches(0.0057725)
-                    .strafeTicksToInches(0.0069642)
-                    .turnTicksToInches(0.009961),
-                new PathConstraints(),
-                new MecanumConstants()
-                    .maxPower(0.8),
-                new Pose()
+            new PinpointMecanumPedroPathingDrivetrain(
+                getHardwareMap(),
+                new PinpointConfig(c -> {
+                    c.name.set("pinpoint");
+                    c.xPodOffset.set(2.187);
+                    c.yPodOffset.set(-4.572);
+                    c.xPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                    c.yPodDirection.set(GoBildaPinpointDriver.EncoderDirection.FORWARD);
+                }),
+                new MecanumConfig(c -> {
+                    c.frontLeftName.set("lf");
+                    c.backLeftName.set("lr");
+                    c.frontRightName.set("rf");
+                    c.backRightName.set("rr");
+
+                    c.frontLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                    c.backLeftDirection.set(DcMotorSimple.Direction.REVERSE);
+                    c.frontRightDirection.set(DcMotorSimple.Direction.FORWARD);
+                    c.backRightDirection.set(DcMotorSimple.Direction.FORWARD);
+
+                    c.manualBrakeMode.set(true);
+                }),
+                new Foresight(new ForesightConfig(c -> {
+                    Controller primaryTranslationalForward = Controller.proportional(0.3);
+                    Controller secondaryTranslationalForward = Controller.proportional(0.1);
+                    Controller primaryTranslationalLateral = Controller.proportional(0.3);
+                    Controller secondaryTranslationalLateral = Controller.proportional(0.1);
+
+                    c.forwardTranslational.set(Controller.piecewise(secondaryTranslationalForward).put(2.5, primaryTranslationalForward));
+                    c.strafeTranslational.set(Controller.piecewise(secondaryTranslationalLateral).put(2.5, primaryTranslationalLateral));
+
+                    c.coast.set(Controller.proportionalFeedforward(0.010978350889324107));
+                    c.brake.set(Controller.proportionalFeedforward(0.008731598255925491));
+
+                    c.headingFeedback.set(Controller.proportional(5.258721785960744));
+                    c.headingBrakeCoefficients.set(Vector2D.cartesian(0.05642143125655298, 0.0063829525363003695));
+
+                    c.linearBrakeCoefficients.set(Matrix.diag(0.10605894992901523, 0.08719146175596092));
+                    c.quadraticBrakeCoefficients.set(Matrix.diag(0.0014663966976606565, 0.0013837064502458813));
+
+                    c.maxAchievableForwardVelocity.set(72.72923108818539);
+                    c.maxAchievableStrafeVelocity.set(52.34323936525474);
+                    c.naturalForwardDeceleration.set(85.01144677379789);
+                    c.naturalStrafeDeceleration.set(104.49787535782846);
+                }))
             )
         );
     }
