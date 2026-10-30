@@ -1,0 +1,48 @@
+---
+title: Installation
+description: Get started using Volt.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Prerequisites
+
+- None
+
+:::note[See Also]
+
+- [Installing Prerequisites](../../reference/00-installing-prerequisites)
+
+:::
+
+## Getting Started
+
+:::note
+
+This guide assumes you have an existing FTC project based on the [FTCRobotController](https://github.com/FIRST-Tech-Challenge/FtcRobotController) repository.
+
+:::
+
+<Steps>
+
+1.  Add the jitpack repository to your TeamCode `build.gradle` file.
+
+    ```gradle title="TeamCode/build.gradle"
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+    ```
+
+2.  Add the Volt dependency to your TeamCode `build.gradle` file.
+
+    ```gradle title="TeamCode/build.gradle"
+    dependencies {
+        ...
+
+        implementation 'com.github.KingsSack:Volt:0.4.0'
+    }
+    ```
+
+3.  Create your first [Robot](../../guides/01-robots)!
+
+</Steps>
