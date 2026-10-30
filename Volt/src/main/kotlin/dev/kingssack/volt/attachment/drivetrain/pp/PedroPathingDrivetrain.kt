@@ -12,9 +12,9 @@ import dev.kingssack.volt.attachment.drivetrain.Drivetrain
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
 /**
- * A PedroPathing [dev.kingssack.volt.attachment.drivetrain.Drivetrain].
+ * A PedroPathing [Drivetrain].
  *
- * A pre-built [dev.kingssack.volt.attachment.drivetrain.Drivetrain] that integrates with the
+ * A pre-built [Drivetrain] that integrates with the
  * PedroPathing library.
  *
  * @param follower the path follower instance

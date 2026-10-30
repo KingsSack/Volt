@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry
 import java.util.*
 
 /**
- * A RoadRunner [dev.kingssack.volt.attachment.drivetrain.Drivetrain].
+ * A RoadRunner [Drivetrain].
  *
  * @param hardwareMap the hardware map
  * @param orientation the control hub's orientation
