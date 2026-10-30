@@ -16,7 +16,12 @@ sealed interface AttachmentState {
     data class Fault(val error: Throwable) : AttachmentState
 }
 
-/** Base class for all attachments in the robot system. */
+/**
+ * Base class for all attachments in the robot system.
+ *
+ * @param name the name of the attachment to use in telemetry
+ * @property state the attachment's current state
+ */
 abstract class Attachment(val name: String) {
     private val _state = MutableStateFlow<AttachmentState>(AttachmentState.Idle)
     val state: StateFlow<AttachmentState> = _state.asStateFlow()
