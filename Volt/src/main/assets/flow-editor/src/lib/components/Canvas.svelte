@@ -133,6 +133,8 @@
           };
           flowGraphState.deleteConnection(existingConn.id);
           return;
+        }
+      }
     }
 
     const portPos = getPortPosition(node, portType);
