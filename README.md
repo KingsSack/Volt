@@ -13,4 +13,6 @@ Volt is an open-source software library developed in Kotlin for FIRST Tech Chall
 
 ## Installation
 
-*Coming Soon*
+1. Open your TeamCode `[build.gradle](https://github.com/FIRST-Tech-Challenge/FtcRobotController/blob/master/TeamCode/build.gradle)`
+2. In the `repositories` block, add `maven { url 'https://jitpack.io' }`
+3. Add Volt as a dependency in the `dependencies` block: `implementation 'com.github.KingsSack:Volt:0.4.0'`
