@@ -9,13 +9,14 @@ import com.pedropathing.math.Pose
 import com.pedropathing.paths.Path
 import dev.kingssack.volt.annotations.VoltAction
 import dev.kingssack.volt.attachment.drivetrain.Drivetrain
+import dev.kingssack.volt.util.Radians
+import dev.kingssack.volt.util.toDegrees
 import org.firstinspires.ftc.robotcore.external.Telemetry
 
 /**
  * A PedroPathing [Drivetrain].
  *
- * A pre-built [Drivetrain] that integrates with the
- * PedroPathing library.
+ * A pre-built [Drivetrain] that integrates with the PedroPathing library.
  *
  * @param follower the path follower instance
  * @param poseFactory the pose factory to use
@@ -69,9 +70,9 @@ abstract class PedroPathingDrivetrain(
 
         super.update()
         with(telemetry) {
-            addData("x", pose.x())
-            addData("y", pose.y())
-            addData("heading", pose.heading())
+            addData("x (in)", "%.2f".format(pose.x()))
+            addData("y (in)", "%.2f".format(pose.y()))
+            addData("heading (deg)", "%.1f".format(Radians(pose.heading()).toDegrees().value))
         }
     }
 }
